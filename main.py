@@ -69,8 +69,8 @@ def distancia_entre_centros(x1, y1, x2, y2):
 class Estrela:
     def __init__(self):
         self.raio = 15
-        self.x = random.randrange(LARGURA - self.raio)
-        self.y = random.randrange(ALTURA - self.raio)
+        self.x = random.randrange(LARGURA - (self.raio)*2)
+        self.y = random.randrange(ALTURA - (self.raio)*2)
         self.escala = 1
         self.pontos = criar_pontos_circulo(self.raio)[0][0]
 
@@ -162,11 +162,11 @@ while rodando:
         nave_x_2 += mudar_x_2
         nave_y_2 += mudar_y_2
 
-        nave_x_1 = max(nave_x_1, 0) if nave_x_1 < LARGURA else LARGURA
-        nave_y_1 = max(nave_y_1, 0) if nave_y_1 < ALTURA else ALTURA
+        nave_x_1 = max(nave_x_1, 0) if nave_x_1 < LARGURA - raio_1 else LARGURA - raio_1
+        nave_y_1 = max(nave_y_1, 0) if nave_y_1 < ALTURA - raio_1 else ALTURA - raio_1
 
-        nave_x_2 = max(nave_x_2, 0) if nave_x_2 < LARGURA else LARGURA
-        nave_y_2 = max(nave_y_2, 0) if nave_y_2 < ALTURA else ALTURA
+        nave_x_2 = max(nave_x_2, 0) if nave_x_2 < LARGURA - raio_2 else LARGURA - raio_2
+        nave_y_2 = max(nave_y_2, 0) if nave_y_2 < ALTURA - raio_2 else ALTURA - raio_2
 
         # --- Renderização ---
         tela.fill(PRETO)
@@ -230,8 +230,6 @@ while rodando:
             cor_txt = BRANCO if i == 0 else LARANJA_NEON
             superficie = fonte.render(t, True, cor_txt)
             tela.blit(superficie, (15, 15 + i * 22))
-
-        
 
         pygame.display.flip()
         relogio.tick(60)
