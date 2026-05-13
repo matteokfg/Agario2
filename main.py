@@ -1,13 +1,13 @@
 import pygame
 import math
 import random
-
+import time
 
 # Inicialização do Pygame
 pygame.init()
 LARGURA, ALTURA = 1000, 700
 tela = pygame.display.set_mode((LARGURA, ALTURA))
-pygame.display.set_caption("Transformações Geométricas - A Nave e o Espaço")
+pygame.display.set_caption("Agar.io v0.5")
 relogio = pygame.time.Clock()
 
 # Cores Cyberpunk / Neon
@@ -18,19 +18,17 @@ MAGENTA_NEON = (255, 0, 255)
 LARANJA_NEON = (255, 100, 0)
 AZUL_CLARO = (100, 200, 255)
 
-# --- Definição da Nave  ---
+# --- Definição da circunferencia  ---
 def criar_pontos_circulo(raio=1):
     circulo = [(round(math.cos(math.radians(i))*raio,2),round(math.sin(math.radians(i))*raio,2)) for i in range(0, 360, 18)]
 
-    triangulo = [(0,0), (35, 25), (-35, 25)]
+    triangulo = [(0,0), circulo[14], circulo[16]]
     # Formato: (vértices, cor, espessura da linha: 0=preenchido)
     return [
-        (circulo, LARANJA_NEON, 0),
+        (circulo, CIANO_NEON, 0),
         (triangulo, PRETO, 0)
     ]
 
-# Estrela de fundo
-estrela_original = [(-1, -1), (1, -1), (1, 1), (-1, 1)]
 
 # --- Função Mestra de Transformação ---
 def transformar_vertices(vertices, tx, ty, angulo_graus, sx, sy, mirror_y=False):
@@ -53,8 +51,11 @@ def transformar_vertices(vertices, tx, ty, angulo_graus, sx, sy, mirror_y=False)
         ry = nx * sin_a + ny * cos_a
         
         # 3. Translação com Screen Wrapping (Bordas infinitas)
-        final_x = (rx + tx) % LARGURA
-        final_y = (ry + ty) % ALTURA
+        final_x = rx + tx
+        final_y = ry + ty
+
+        final_x = max(final_x, 0) if final_x < LARGURA else LARGURA
+        final_y = max(final_y, 0) if final_y < ALTURA else ALTURA
         
         vertices_transformados.append((final_x, final_y))
     return vertices_transformados
@@ -89,34 +90,39 @@ nave_angulo_1 = 0
 nave_angulo_2 = 0
 nave_escala_1 = 1.0
 nave_escala_2 = 1.0
-nave_mirror_y = False
-distancia_centros_circunferencia = 100
+
+distancia_centros_circunferencia = None
+soma_raios = None
 
 estrelas = [Estrela() for _ in range(3)]
+
 fonte = pygame.font.SysFont("Courier New", 18, bold=True)
+
 continuar = True
 rodando = True
+
 while rodando:
     if continuar:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 rodando = False
-            if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_m: 
-                    # Ativa/Desativa o espelhamento no Eixo Y
-                    nave_mirror_y = not nave_mirror_y
 
         teclas = pygame.key.get_pressed()
         
         # Rotação
-        # if teclas[pygame.K_a]: nave_angulo_2 -= 2
-        # if teclas[pygame.K_d]: nave_angulo_2 += 2
+        if teclas[pygame.K_a]: nave_angulo_2 -= 2
+        if teclas[pygame.K_d]: nave_angulo_2 += 2
+
+        if teclas[pygame.K_LEFT]: nave_angulo_1 -= 2
+        if teclas[pygame.K_RIGHT]: nave_angulo_1 += 2
         
         
         # Translação
         mudar_x_1, mudar_y_1 = 0, 0
         mudar_x_2, mudar_y_2 = 0, 0
+
         vel_nave = 3
+
         if teclas[pygame.K_w]: 
             """
             Inicialmente, o visual da nave está com o bico para 90º, mas seu real ângulo é de 0º. Se queremos que nesse caso apenas o eixo Y seja alterado,
@@ -132,14 +138,6 @@ while rodando:
             mudar_x_2 += vel_nave * math.sin(math.radians(360-nave_angulo_2))
         if teclas[pygame.K_a]: mudar_x_2 -= vel_nave
         if teclas[pygame.K_d]: mudar_x_2 += vel_nave
-
-        nave_x_2 += mudar_x_2
-        nave_y_2 += mudar_y_2
-
-
-        # Rotação
-        if teclas[pygame.K_LEFT]: nave_angulo_1 -= 2
-        if teclas[pygame.K_RIGHT]: nave_angulo_1 += 2
 
 
         if teclas[pygame.K_UP]: 
@@ -161,6 +159,15 @@ while rodando:
         nave_x_1 += mudar_x_1
         nave_y_1 += mudar_y_1
 
+        nave_x_2 += mudar_x_2
+        nave_y_2 += mudar_y_2
+
+        nave_x_1 = max(nave_x_1, 0) if nave_x_1 < LARGURA else LARGURA
+        nave_y_1 = max(nave_y_1, 0) if nave_y_1 < ALTURA else ALTURA
+
+        nave_x_2 = max(nave_x_2, 0) if nave_x_2 < LARGURA else LARGURA
+        nave_y_2 = max(nave_y_2, 0) if nave_y_2 < ALTURA else ALTURA
+
         # --- Renderização ---
         tela.fill(PRETO)
         
@@ -170,30 +177,20 @@ while rodando:
 
         # 2. Desenhar a Nave Bonita
         for forma_v, cor, espessura in formas_circulo_1:
-            v_final = transformar_vertices(forma_v, nave_x_1, nave_y_1, nave_angulo_1, nave_escala_1, nave_escala_1, nave_mirror_y)
+            v_final = transformar_vertices(forma_v, nave_x_1, nave_y_1, nave_angulo_1, nave_escala_1, nave_escala_1)
             pygame.draw.polygon(tela, cor, v_final, espessura)
 
         for forma_v, cor, espessura in formas_circulo_2:
-            v_final = transformar_vertices(forma_v, nave_x_2, nave_y_2, nave_angulo_2, nave_escala_2, nave_escala_2, nave_mirror_y)
+            v_final = transformar_vertices(forma_v, nave_x_2, nave_y_2, nave_angulo_2, nave_escala_2, nave_escala_2)
             pygame.draw.polygon(tela, cor, v_final, espessura)
 
-        # --- HUD ---
-        textos = [
-            "CONTROLES DO MOTOR GRÁFICO:",
-            f"Translação (Setas): X={nave_x_1%LARGURA:.0f}, Y={nave_y_1%ALTURA:.0f}",
-            f"Rotação (A, D)  : {nave_angulo_1%360}°",
-            f"Distancia {distancia_centros_circunferencia}"
-        ]
-        for i, t in enumerate(textos):
-            cor_txt = BRANCO if i == 0 else LARANJA_NEON
-            superficie = fonte.render(t, True, cor_txt)
-            tela.blit(superficie, (15, 15 + i * 22))
-
+        # ------- verifica se foi comido -----------------
         distancia_centros_circunferencia = distancia_entre_centros(nave_x_1, nave_y_1, nave_x_2, nave_y_2)
         soma_raios = raio_1 + raio_2
         if distancia_centros_circunferencia <= soma_raios and raio_1 != raio_2:
             continuar = False
 
+        # -------------- verifica se comeu a amora --------
         for i in estrelas:
             distancia_1 = distancia_entre_centros(nave_x_1, nave_y_1, i.x, i.y)
             distancia_2 = distancia_entre_centros(nave_x_2, nave_y_2, i.x, i.y)
@@ -222,10 +219,34 @@ while rodando:
             else:
                 pass
 
+        # --- HUD ---
+        textos = [
+            "CONTROLES DO MOTOR GRÁFICO:",
+            f"Translação (Setas): X={nave_x_1%LARGURA:.0f}, Y={nave_y_1%ALTURA:.0f}",
+            f"Rotação (A, D)  : {nave_angulo_1%360}°",
+            f"Distancia {distancia_centros_circunferencia}"
+        ]
+        for i, t in enumerate(textos):
+            cor_txt = BRANCO if i == 0 else LARANJA_NEON
+            superficie = fonte.render(t, True, cor_txt)
+            tela.blit(superficie, (15, 15 + i * 22))
+
+        
+
         pygame.display.flip()
         relogio.tick(60)
     else:
-        relogio.tick(6000)
         rodando = False
+        textos = [
+            "Resultado da partida:",
+            f"Parabens!! Voce venceu!"
+        ]
+        for i, t in enumerate(textos):
+            cor_txt = BRANCO if i == 0 else LARANJA_NEON
+            superficie = fonte.render(t, True, cor_txt)
+            tela.blit(superficie, (LARGURA // 2, (ALTURA//2) + i * 22))
+        pygame.display.flip()
+        relogio.tick(60)
+        time.sleep(5)
 
 pygame.quit()
