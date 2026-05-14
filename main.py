@@ -1,7 +1,10 @@
-import pygame
 import math
 import random
 import time
+
+import pygame
+import numpy as np
+
 from contants import *
 from moeda import Moeda
 from circulo import Circulo
@@ -20,6 +23,46 @@ fonte = pygame.font.SysFont("Courier New", 18, bold=True)
 # texture = pygame.image.load('saturno.jpg').convert_alpha()
 
 # texture = pygame.transform.scale(texture, (65, 65))
+
+
+# para que serve np.array(COR_LUZ)?
+def calcular_iluminacao_2d(vertices, cor_base):
+    # 1. Encontrar o centro do polígono (média dos pontos X e Y)
+    # Assumindo vértices como [(x1, y1), (x2, y2), ...]
+    centro_x = sum(v[0] for v in vertices) / len(vertices)
+    centro_y = sum(v[1] for v in vertices) / len(vertices)
+    centro_poligono = np.array([centro_x, centro_y, 0])
+
+    # 2. Vetor da luz (da face para a fonte de luz)
+    vetor_luz = np.array(POSICAO_LUZ_FIXA) - centro_poligono
+    
+    # 3. Normalização do vetor de luz
+    distancia = np.linalg.norm(vetor_luz)
+    if distancia == 0:
+        return cor_base
+    vetor_luz_norm = vetor_luz / distancia
+
+    # 4. Produto Escalar (Lambert)
+    # Quanto mais "embaixo" da luz o polígono estiver, mais forte o brilho
+    dot_product = np.dot(np.array(NORMAL_2D), vetor_luz_norm)
+    
+    intensidade = max(0, dot_product)
+    
+    # 5. Atenuação opcional: a luz perde força com a distância? 
+    # Se quiser uma luz global (sol), ignore a linha abaixo.
+    intensidade = intensidade * (500 / (500 + distancia)) 
+
+    fator_final = min(1.0, intensidade + LUZ_AMBIENTE)
+    
+    # 6. Aplicar cor
+    cor_final = (np.array(cor_base) * fator_final).astype(int)
+    return tuple(np.clip(cor_final, 0, 255))
+
+# --- EXEMPLO NO LOOP DE DESENHO ---
+# vertices_exemplo = [(100, 100), (200, 100), (150, 200)]
+# cor_poligono = np.array([100, 150, 255]) # Azul claro
+# cor_com_luz = calcular_iluminacao_2d(vertices_exemplo, cor_poligono)
+# pygame.draw.polygon(screen, cor_com_luz, vertices_exemplo)
 
 # --- Inicialização ---
 bordas = [
@@ -182,7 +225,9 @@ while rodando:
 
     # tela.blit(texture, (c1.tx, c1.ty))
     for borda in bordas:
-        pygame.draw.polygon(tela, VERDE_BORDA, borda, 0)
+        cor_com_luz = calcular_iluminacao_2d(borda, VERDE_BORDA)
+        pygame.draw.polygon(tela, cor_com_luz, borda, 0)
+
 
     pygame.display.flip()
     relogio.tick(60)
