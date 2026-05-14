@@ -14,13 +14,19 @@ tela = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Agar.io v0.5")
 relogio = pygame.time.Clock()
 
+fonte = pygame.font.SysFont("Courier New", 18, bold=True)
+
+# Load and optimize the texture
+# texture = pygame.image.load('saturno.jpg').convert_alpha()
+
+# texture = pygame.transform.scale(texture, (65, 65))
 
 # --- Inicialização ---
 moedas = [Moeda() for _ in range(3)]
 
-c1 = Circulo(700,300,RAIO, 0, 1.0, 1.0)
+c1 = Circulo(700,300,RAIO, 0, 1.0, 1.0, 1)
 
-c2 = Circulo(100,300,RAIO, 0, 1.0, 1.0, LARANJA_NEON)
+c2 = Circulo(100,300,RAIO, 0, 1.0, 1.0, 2, LARANJA_NEON)
 
 
 distancia_centros_circunferencia = None
@@ -28,7 +34,7 @@ soma_raios = None
 
 rodando = True
 
-fonte = pygame.font.SysFont("Courier New", 18, bold=True)
+vencedor = None
 
 while rodando:
     for evento in pygame.event.get():
@@ -113,6 +119,10 @@ while rodando:
     soma_raios = c1.raio + c2.raio
     if distancia_centros_circunferencia <= soma_raios and c1.raio != c2.raio:
         rodando = False
+        if c1.raio > c2.raio:
+            vencedor = c1
+        else:
+            vencedor = c2
 
     # -------------- verifica se comeu a amora --------
     for moeda in moedas:
@@ -159,20 +169,22 @@ while rodando:
         superficie = fonte.render(t, True, cor_txt)
         tela.blit(superficie, (15, 15 + i * 22))
 
+    # tela.blit(texture, (c1.tx, c1.ty))
+
     pygame.display.flip()
     relogio.tick(60)
 
-
-textos = [
-    "Resultado da partida:",
-    f"Parabens!! Voce venceu!"
-]
-for i, t in enumerate(textos):
-    cor_txt = BRANCO if i == 0 else AZUL_CLARO
-    superficie = fonte.render(t, True, cor_txt)
-    tela.blit(superficie, (LARGURA // 2, (ALTURA//2) + i * 22))
-pygame.display.flip()
-relogio.tick(60)
-time.sleep(5)
+if vencedor is not None:
+    textos = [
+        "Resultado da partida:",
+        f"Parabens!! {vencedor} venceu!"
+    ]
+    for i, t in enumerate(textos):
+        cor_txt = BRANCO if i == 0 else AZUL_CLARO
+        superficie = fonte.render(t, True, cor_txt)
+        tela.blit(superficie, (LARGURA // 2, (ALTURA//2) + i * 22))
+    pygame.display.flip()
+    relogio.tick(60)
+    time.sleep(5)
 
 pygame.quit()

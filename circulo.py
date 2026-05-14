@@ -3,7 +3,7 @@ import math
 from contants import *
 
 class Circulo:
-    def __init__(self, x, y, raio, angulo_graus, sx, sy, cor=CIANO_NEON):
+    def __init__(self, x, y, raio, angulo_graus, sx, sy, num_jogador, cor=CIANO_NEON):
         self.x = x
         self.y = y
         self.raio = raio
@@ -13,7 +13,11 @@ class Circulo:
         self.sx = sx
         self.sy = sy
         self.cor = cor
+        self.num_jogador = num_jogador
         self.pontos = self._criar_pontos()
+
+    def __str__(self):
+        return f"Jogador {self.num_jogador}"
 
     # --- Definição da circunferencia  ---
     def _criar_pontos(self) -> list:
