@@ -22,6 +22,14 @@ fonte = pygame.font.SysFont("Courier New", 18, bold=True)
 # texture = pygame.transform.scale(texture, (65, 65))
 
 # --- Inicialização ---
+bordas = [
+    [(0,0), (0,ALTURA), (ESPESSURA_BORDA,ALTURA), (ESPESSURA_BORDA,0)],
+    [(0,0), (LARGURA,0), (LARGURA,ESPESSURA_BORDA), (0,ESPESSURA_BORDA)],
+    [(LARGURA,0), (LARGURA,ALTURA), (LARGURA-ESPESSURA_BORDA,ALTURA), (LARGURA-ESPESSURA_BORDA,0)],
+    [(0,ALTURA), (LARGURA,ALTURA), (LARGURA,ALTURA-ESPESSURA_BORDA), (0,ALTURA-ESPESSURA_BORDA)]
+]
+
+
 moedas = [Moeda() for _ in range(3)]
 
 c1 = Circulo(700,300,RAIO, 0, 1.0, 1.0, 1)
@@ -70,8 +78,8 @@ while rodando:
     if teclas[pygame.K_s]: 
         mudar_y_2 += vel_circunferencia * math.cos(math.radians(360-c2.angulo_graus))
         mudar_x_2 += vel_circunferencia * math.sin(math.radians(360-c2.angulo_graus))
-    if teclas[pygame.K_a]: mudar_x_2 -= vel_circunferencia
-    if teclas[pygame.K_d]: mudar_x_2 += vel_circunferencia
+    # if teclas[pygame.K_a]: mudar_x_2 -= vel_circunferencia
+    # if teclas[pygame.K_d]: mudar_x_2 += vel_circunferencia
 
 
     if teclas[pygame.K_UP]: 
@@ -87,8 +95,8 @@ while rodando:
     if teclas[pygame.K_DOWN]: 
         mudar_y_1 += vel_circunferencia * math.cos(math.radians(360-c1.angulo_graus))
         mudar_x_1 += vel_circunferencia * math.sin(math.radians(360-c1.angulo_graus))
-    if teclas[pygame.K_LEFT]: mudar_x_1 -= vel_circunferencia
-    if teclas[pygame.K_RIGHT]: mudar_x_1 += vel_circunferencia
+    # if teclas[pygame.K_LEFT]: mudar_x_1 -= vel_circunferencia
+    # if teclas[pygame.K_RIGHT]: mudar_x_1 += vel_circunferencia
 
     c1.tx += mudar_x_1
     c1.ty += mudar_y_1
@@ -96,11 +104,11 @@ while rodando:
     c2.tx += mudar_x_2
     c2.ty += mudar_y_2
 
-    c1.tx = max(c1.tx, 0) if c1.tx < LARGURA - c1.raio else LARGURA - c1.raio
-    c1.ty = max(c1.ty, 0) if c1.ty < ALTURA - c1.raio else ALTURA - c1.raio
+    c1.tx = max(c1.tx, 45 + ESPESSURA_BORDA) if c1.tx < LARGURA - c1.raio - ESPESSURA_BORDA else LARGURA - c1.raio - ESPESSURA_BORDA
+    c1.ty = max(c1.ty, 45 + ESPESSURA_BORDA) if c1.ty < ALTURA - c1.raio - ESPESSURA_BORDA else ALTURA - c1.raio - ESPESSURA_BORDA
 
-    c2.tx = max(c2.tx, 0) if c2.tx < LARGURA - c2.raio else LARGURA - c2.raio
-    c2.ty = max(c2.ty, 0) if c2.ty < ALTURA - c2.raio else ALTURA - c2.raio
+    c2.tx = max(c2.tx, 45 + ESPESSURA_BORDA) if c2.tx < LARGURA - c2.raio - ESPESSURA_BORDA else LARGURA - c2.raio - ESPESSURA_BORDA
+    c2.ty = max(c2.ty, 45 + ESPESSURA_BORDA) if c2.ty < ALTURA - c2.raio - ESPESSURA_BORDA else ALTURA - c2.raio - ESPESSURA_BORDA
 
     # --- Renderização ---
     tela.fill(PRETO)
@@ -161,15 +169,20 @@ while rodando:
     textos = [
         "CONTROLES DO MOTOR GRÁFICO:",
         f"Translação (Setas): X={c1.tx%LARGURA:.0f}, Y={c1.ty%ALTURA:.0f}",
-        f"Rotação (A, D)  : {c1.angulo_graus%360}°",
+        f"Translação (Setas): X={c2.tx%LARGURA:.0f}, Y={c2.ty%ALTURA:.0f}",
+        f"Rotação (LEFT, RIGHT)  : {c1.angulo_graus%360}°",
+        f"Rotação (A, D)  : {c2.angulo_graus%360}°",
         f"Distancia {distancia_centros_circunferencia}"
     ]
     for i, t in enumerate(textos):
-        cor_txt = BRANCO if i == 0 else LARANJA_NEON
+        cor_txt = CIANO_NEON if i % 2 == 1 else BRANCO if i == 0 else LARANJA_NEON
+        x_HUD = 500 if i % 2 == 1 else 15
         superficie = fonte.render(t, True, cor_txt)
-        tela.blit(superficie, (15, 15 + i * 22))
+        tela.blit(superficie, (x_HUD, 15 + i * 22 if i < 2 else 15 + (math.ceil(i/2)) * 22))
 
     # tela.blit(texture, (c1.tx, c1.ty))
+    for borda in bordas:
+        pygame.draw.polygon(tela, VERDE_BORDA, borda, 0)
 
     pygame.display.flip()
     relogio.tick(60)

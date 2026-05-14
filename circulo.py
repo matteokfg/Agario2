@@ -77,8 +77,8 @@ class Circulo:
             final_x = rx + self.tx
             final_y = ry + self.ty
 
-            final_x = max(final_x, 0) if final_x < LARGURA else LARGURA # limita a borda
-            final_y = max(final_y, 0) if final_y < ALTURA else ALTURA # limita a borda
+            final_x = max(final_x, ESPESSURA_BORDA) if final_x < LARGURA - ESPESSURA_BORDA else LARGURA - ESPESSURA_BORDA # limita a borda
+            final_y = max(final_y, ESPESSURA_BORDA) if final_y < ALTURA - ESPESSURA_BORDA else ALTURA - ESPESSURA_BORDA # limita a borda
             
             vertices_transformados.append((final_x, final_y))
         return vertices_transformados
