@@ -23,7 +23,6 @@ class Circulo:
     def __str__(self):
         return f"Jogador {self.num_jogador}"
 
-    # --- Definição da circunferencia  ---
     def _criar_pontos(self) -> list:
         """
         Cria lista dos pontos externos da cirncuferencia (poligono com 20 lados). Para isso, faz se um for loop, de 0 a 360 com step 18 (360/18=20 pontos),
@@ -45,7 +44,6 @@ class Circulo:
             (triangulo, PRETO, 0)
         ]
 
-    # --- Calculo de distancia entre circunferencias --------
     def distancia_entre_centros(self, outro_x, outro_y) -> float:
         """
         Para o calculo da distancia, sao necessarias as coordenadas dos centros das duas circunferencias. O calculo e o seguinte:
@@ -53,7 +51,6 @@ class Circulo:
         """
         return math.sqrt(math.pow((self.tx - outro_x),2) + math.pow((self.ty - outro_y), 2))
 
-    # --- Função Mestra de Transformação ---
     def transformar_vertices(self, forma) -> list:
         """
         A funcao gera os valores atualizados dos vertices do objeto para ser renderizado.
@@ -87,15 +84,8 @@ class Circulo:
             vertices_transformados.append((final_x, final_y))
         return vertices_transformados
 
-    # --- Funcao Mestra para renderizar objeto
-    def desenhar(self, tela):
-        """Funcao que renderiza o objeto"""
-        for forma_v, cor, espessura in self.pontos:
-            novos_pontos = self.transformar_vertices(forma_v)
-            cor_com_luz = self._calcular_iluminacao_2d(cor, novos_pontos)
-            pygame.draw.polygon(tela, cor_com_luz, novos_pontos, espessura)
-
-    def _calcular_iluminacao_2d(self, cor, vertices):
+    def _calcular_iluminacao_2d(self, cor, vertices) -> tuple:
+        """Funcao para calcular cor de acordo com distância da fonte de luz"""
         # 1. Encontrar o centro do polígono (média dos pontos X e Y)
         # Assumindo vértices como [(x1, y1), (x2, y2), ...]
         centro_x = sum(v[0] for v in vertices) / len(vertices)
@@ -117,12 +107,18 @@ class Circulo:
         
         intensidade = max(0, dot_product)
         
-        # 5. Atenuação opcional: a luz perde força com a distância? 
-        # Se quiser uma luz global (sol), ignore a linha abaixo.
+        # 5. A luz perde força com a distância
         intensidade = intensidade * (300 / (300 + distancia)) 
 
         fator_final = min(1.0, intensidade + LUZ_AMBIENTE)
         
-        # 6. Aplicar cor
+        # 6. Retornar cor
         cor_final = (np.array(cor) * fator_final).astype(int)
         return tuple(np.clip(cor_final, 0, 255))
+
+    def desenhar(self, tela):
+        """Funcao mestra que renderiza o objeto"""
+        for forma_v, cor, espessura in self.pontos:
+            novos_pontos = self.transformar_vertices(forma_v)
+            cor_com_luz = self._calcular_iluminacao_2d(cor, novos_pontos)
+            pygame.draw.polygon(tela, cor_com_luz, novos_pontos, espessura)

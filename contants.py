@@ -8,6 +8,9 @@ AZUL_CLARO = (100, 200, 255)
 VERDE_BORDA = (58, 179, 56) # (9, 196, 12)
 CINZA = (120,120,120)
 
+# Velocidade do movimento
+vel_circunferencia = 3
+
 # Tamanho do raio
 RAIO = 45
 

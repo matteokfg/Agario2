@@ -54,7 +54,7 @@ class Moeda():
         # Formato: list[vértice]
         return circulo
     
-    def _calcular_iluminacao_2d(self, cor=BRANCO):
+    def _calcular_iluminacao_2d(self, cor=BRANCO) -> tuple:
         # 1. Encontrar o centro do polígono (média dos pontos X e Y)
         # Assumindo vértices como [(x1, y1), (x2, y2), ...]
         centro_x = sum(v[0] for v in self.pontos) / len(self.pontos)
@@ -76,12 +76,11 @@ class Moeda():
         
         intensidade = max(0, dot_product)
         
-        # 5. Atenuação opcional: a luz perde força com a distância? 
-        # Se quiser uma luz global (sol), ignore a linha abaixo.
+        # 5. A luz perde força com a distância
         intensidade = intensidade * (500 / (500 + distancia)) 
 
         fator_final = min(1.0, intensidade + LUZ_AMBIENTE)
         
-        # 6. Aplicar cor
+        # 6. Retorna cor
         cor_final = (np.array(cor) * fator_final).astype(int)
         return tuple(np.clip(cor_final, 0, 255))

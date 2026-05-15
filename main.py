@@ -10,7 +10,7 @@ from moeda import Moeda
 from circulo import Circulo
 
 
-# Inicialização do Pygame
+# --- Inicialização do Pygame ---
 pygame.init()
 
 tela = pygame.display.set_mode((LARGURA, ALTURA))
@@ -26,42 +26,6 @@ fonte = pygame.font.SysFont("Courier New", 18, bold=True)
 # texture = pygame.transform.scale(texture, (65, 65))
 
 
-# para que serve np.array(COR_LUZ)?
-def calcular_iluminacao_2d(vertices, cor_base):
-    # 1. Encontrar o centro do polígono (média dos pontos X e Y)
-    # Assumindo vértices como [(x1, y1), (x2, y2), ...]
-    centro_x = sum(v[0] for v in vertices) / len(vertices)
-    centro_y = sum(v[1] for v in vertices) / len(vertices)
-    centro_poligono = np.array([centro_x, centro_y, 0])
-
-    # 2. Vetor da luz (da face para a fonte de luz)
-    vetor_luz = np.array(POSICAO_LUZ_FIXA) - centro_poligono
-    
-    # 3. Normalização do vetor de luz
-    distancia = np.linalg.norm(vetor_luz)
-    if distancia == 0:
-        return cor_base
-    vetor_luz_norm = vetor_luz / distancia
-
-    # 4. Produto Escalar (Lambert)
-    # Quanto mais "embaixo" da luz o polígono estiver, mais forte o brilho
-    dot_product = np.dot(np.array(NORMAL_2D), vetor_luz_norm)
-    
-    intensidade = max(0, dot_product)
-    
-    # 5. Atenuação opcional: a luz perde força com a distância? 
-    # Se quiser uma luz global (sol), ignore a linha abaixo.
-    intensidade = intensidade * (500 / (500 + distancia)) 
-
-    fator_final = min(1.0, intensidade + LUZ_AMBIENTE)
-    
-    # 6. Aplicar cor
-    cor_final = (np.array(cor_base) * fator_final).astype(int)
-    return tuple(np.clip(cor_final, 0, 255))
-
-
-
-
 # --- Inicialização ---
 bordas = [
     [(0,0), (0,ALTURA), (ESPESSURA_BORDA,ALTURA), (ESPESSURA_BORDA,0)],
@@ -70,14 +34,11 @@ bordas = [
     [(0,ALTURA), (LARGURA,ALTURA), (LARGURA,ALTURA-ESPESSURA_BORDA), (0,ALTURA-ESPESSURA_BORDA)]
 ]
 
-
 moedas = [Moeda() for _ in range(3)]
 
 c1 = Circulo(700,300,RAIO, 0, 1.0, 1.0, 1)
 
 c2 = Circulo(100,300,RAIO, 0, 1.0, 1.0, 2, LARANJA_NEON)
-
-
 
 distancia_centros_circunferencia = None
 soma_raios = None
@@ -93,7 +54,7 @@ while rodando:
 
     teclas = pygame.key.get_pressed()
     
-    # Rotação
+    # --- Rotação ---------------------------------
     if teclas[pygame.K_a]: c2.angulo_graus -= 2
     if teclas[pygame.K_d]: c2.angulo_graus += 2
 
@@ -101,11 +62,9 @@ while rodando:
     if teclas[pygame.K_RIGHT]: c1.angulo_graus += 2
     
     
-    # Translação
+    # --- Translação -------------------------------
     mudar_x_1, mudar_y_1 = 0, 0
     mudar_x_2, mudar_y_2 = 0, 0
-
-    vel_circunferencia = 3
 
     if teclas[pygame.K_w]: 
         """
@@ -120,8 +79,6 @@ while rodando:
     if teclas[pygame.K_s]: 
         mudar_y_2 += vel_circunferencia * math.cos(math.radians(360-c2.angulo_graus))
         mudar_x_2 += vel_circunferencia * math.sin(math.radians(360-c2.angulo_graus))
-    # if teclas[pygame.K_a]: mudar_x_2 -= vel_circunferencia
-    # if teclas[pygame.K_d]: mudar_x_2 += vel_circunferencia
 
 
     if teclas[pygame.K_UP]: 
@@ -137,8 +94,6 @@ while rodando:
     if teclas[pygame.K_DOWN]: 
         mudar_y_1 += vel_circunferencia * math.cos(math.radians(360-c1.angulo_graus))
         mudar_x_1 += vel_circunferencia * math.sin(math.radians(360-c1.angulo_graus))
-    # if teclas[pygame.K_LEFT]: mudar_x_1 -= vel_circunferencia
-    # if teclas[pygame.K_RIGHT]: mudar_x_1 += vel_circunferencia
 
     c1.tx += mudar_x_1
     c1.ty += mudar_y_1
@@ -152,17 +107,21 @@ while rodando:
     c2.tx = max(c2.tx, 45 + ESPESSURA_BORDA) if c2.tx < LARGURA - c2.raio - ESPESSURA_BORDA else LARGURA - c2.raio - ESPESSURA_BORDA
     c2.ty = max(c2.ty, 45 + ESPESSURA_BORDA) if c2.ty < ALTURA - c2.raio - ESPESSURA_BORDA else ALTURA - c2.raio - ESPESSURA_BORDA
 
-    # --- Renderização ---
+    # --- Renderização (tela) ----------------------
     tela.fill(PRETO)
     
-    # 1. Desenhar Estrelas
+    # --- Desenhar moedas --------------------------
     for e in moedas:
         e.atualizar_e_desenhar(tela)
 
-    # 2. Desenhar a circunferencia Bonita
+    # --- Desenhar as circunferencias --------------
     c1.desenhar(tela)
 
     c2.desenhar(tela)
+
+    # --- Renderiza a borda verde -------------------
+    for borda in bordas:
+        pygame.draw.polygon(tela, VERDE_BORDA, borda, 0)
 
     # ------- verifica se foi comido -----------------
     distancia_centros_circunferencia = c1.distancia_entre_centros(c2.tx, c2.ty)
@@ -174,7 +133,7 @@ while rodando:
         else:
             vencedor = c2
 
-    # -------------- verifica se comeu a amora --------
+    # -------------- verifica se comeu a moeda --------
     for moeda in moedas:
         distancia_1 = c1.distancia_entre_centros(moeda.x, moeda.y)
         distancia_2 = c2.distancia_entre_centros(moeda.x, moeda.y)
@@ -223,14 +182,11 @@ while rodando:
         tela.blit(superficie, (x_HUD, 15 + i * 22 if i < 2 else 15 + (math.ceil(i/2)) * 22))
 
     # tela.blit(texture, (c1.tx, c1.ty))
-    for borda in bordas:
-        # cor_com_luz = calcular_iluminacao_2d(borda, VERDE_BORDA)
-        pygame.draw.polygon(tela, VERDE_BORDA, borda, 0)
-
 
     pygame.display.flip()
     relogio.tick(60)
 
+# --- HUD do vencedor ---
 if vencedor is not None:
     textos = [
         "Resultado da partida:",
