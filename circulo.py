@@ -1,6 +1,10 @@
-import pygame
 import math
+
+import pygame
+import numpy as np
+
 from contants import *
+
 
 class Circulo:
     def __init__(self, x, y, raio, angulo_graus, sx, sy, num_jogador, cor=CIANO_NEON):
@@ -88,4 +92,37 @@ class Circulo:
         """Funcao que renderiza o objeto"""
         for forma_v, cor, espessura in self.pontos:
             novos_pontos = self.transformar_vertices(forma_v)
-            pygame.draw.polygon(tela, cor, novos_pontos, espessura)
+            cor_com_luz = self._calcular_iluminacao_2d(cor, novos_pontos)
+            pygame.draw.polygon(tela, cor_com_luz, novos_pontos, espessura)
+
+    def _calcular_iluminacao_2d(self, cor, vertices):
+        # 1. Encontrar o centro do polígono (média dos pontos X e Y)
+        # Assumindo vértices como [(x1, y1), (x2, y2), ...]
+        centro_x = sum(v[0] for v in vertices) / len(vertices)
+        centro_y = sum(v[1] for v in vertices) / len(vertices)
+        centro_poligono = np.array([centro_x, centro_y, 0])
+
+        # 2. Vetor da luz (da face para a fonte de luz)
+        vetor_luz = np.array(POSICAO_LUZ_FIXA) - centro_poligono
+        
+        # 3. Normalização do vetor de luz
+        distancia = np.linalg.norm(vetor_luz)
+        if distancia == 0:
+            return cor
+        vetor_luz_norm = vetor_luz / distancia
+
+        # 4. Produto Escalar (Lambert)
+        # Quanto mais "embaixo" da luz o polígono estiver, mais forte o brilho
+        dot_product = np.dot(np.array(NORMAL_2D), vetor_luz_norm)
+        
+        intensidade = max(0, dot_product)
+        
+        # 5. Atenuação opcional: a luz perde força com a distância? 
+        # Se quiser uma luz global (sol), ignore a linha abaixo.
+        intensidade = intensidade * (300 / (300 + distancia)) 
+
+        fator_final = min(1.0, intensidade + LUZ_AMBIENTE)
+        
+        # 6. Aplicar cor
+        cor_final = (np.array(cor) * fator_final).astype(int)
+        return tuple(np.clip(cor_final, 0, 255))

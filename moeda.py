@@ -1,6 +1,9 @@
-import pygame
 import math
 import random
+
+import pygame
+import numpy as np
+
 from contants import *
 
 
@@ -11,12 +14,13 @@ class Moeda():
         self.y = random.randrange(ALTURA - (self.raio)*2)
         self.escala = 1
         self.angulo_graus = 0
-        self.pontos = self.criar_pontos_circulo()
+        self.pontos = self._criar_pontos_circulo()
+        self.cor = self._calcular_iluminacao_2d(BRANCO)
 
     def atualizar_e_desenhar(self, surface):
         """Segue a mesma ideia de Circulo.desenhar()"""
         v = self.transformar_vertices()
-        pygame.draw.polygon(surface, BRANCO, v, 0)
+        pygame.draw.polygon(surface, self.cor, v, 0)
 
     def transformar_vertices(self) -> list:
         """Segue a mesma ideia do Circulo.transformar_vertices()"""
@@ -44,8 +48,40 @@ class Moeda():
             vertices_transformados.append((final_x, final_y))
         return vertices_transformados
 
-    def criar_pontos_circulo(self) -> list:
+    def _criar_pontos_circulo(self) -> list:
         """Segue a mesma ideia de Circulo._criar_pontos()"""
         circulo = [(round(math.cos(math.radians(i))*self.raio,2),round(math.sin(math.radians(i))*self.raio,2)) for i in range(0, 360, 18)]
         # Formato: list[vértice]
         return circulo
+    
+    def _calcular_iluminacao_2d(self, cor=BRANCO):
+        # 1. Encontrar o centro do polígono (média dos pontos X e Y)
+        # Assumindo vértices como [(x1, y1), (x2, y2), ...]
+        centro_x = sum(v[0] for v in self.pontos) / len(self.pontos)
+        centro_y = sum(v[1] for v in self.pontos) / len(self.pontos)
+        centro_poligono = np.array([centro_x, centro_y, 0])
+
+        # 2. Vetor da luz (da face para a fonte de luz)
+        vetor_luz = np.array(POSICAO_LUZ_FIXA) - centro_poligono
+        
+        # 3. Normalização do vetor de luz
+        distancia = np.linalg.norm(vetor_luz)
+        if distancia == 0:
+            return cor
+        vetor_luz_norm = vetor_luz / distancia
+
+        # 4. Produto Escalar (Lambert)
+        # Quanto mais "embaixo" da luz o polígono estiver, mais forte o brilho
+        dot_product = np.dot(np.array(NORMAL_2D), vetor_luz_norm)
+        
+        intensidade = max(0, dot_product)
+        
+        # 5. Atenuação opcional: a luz perde força com a distância? 
+        # Se quiser uma luz global (sol), ignore a linha abaixo.
+        intensidade = intensidade * (500 / (500 + distancia)) 
+
+        fator_final = min(1.0, intensidade + LUZ_AMBIENTE)
+        
+        # 6. Aplicar cor
+        cor_final = (np.array(cor) * fator_final).astype(int)
+        return tuple(np.clip(cor_final, 0, 255))

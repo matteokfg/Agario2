@@ -19,6 +19,7 @@ relogio = pygame.time.Clock()
 
 fonte = pygame.font.SysFont("Courier New", 18, bold=True)
 
+
 # Load and optimize the texture
 # texture = pygame.image.load('saturno.jpg').convert_alpha()
 
@@ -58,11 +59,8 @@ def calcular_iluminacao_2d(vertices, cor_base):
     cor_final = (np.array(cor_base) * fator_final).astype(int)
     return tuple(np.clip(cor_final, 0, 255))
 
-# --- EXEMPLO NO LOOP DE DESENHO ---
-# vertices_exemplo = [(100, 100), (200, 100), (150, 200)]
-# cor_poligono = np.array([100, 150, 255]) # Azul claro
-# cor_com_luz = calcular_iluminacao_2d(vertices_exemplo, cor_poligono)
-# pygame.draw.polygon(screen, cor_com_luz, vertices_exemplo)
+
+
 
 # --- Inicialização ---
 bordas = [
@@ -78,6 +76,7 @@ moedas = [Moeda() for _ in range(3)]
 c1 = Circulo(700,300,RAIO, 0, 1.0, 1.0, 1)
 
 c2 = Circulo(100,300,RAIO, 0, 1.0, 1.0, 2, LARANJA_NEON)
+
 
 
 distancia_centros_circunferencia = None
@@ -225,8 +224,8 @@ while rodando:
 
     # tela.blit(texture, (c1.tx, c1.ty))
     for borda in bordas:
-        cor_com_luz = calcular_iluminacao_2d(borda, VERDE_BORDA)
-        pygame.draw.polygon(tela, cor_com_luz, borda, 0)
+        # cor_com_luz = calcular_iluminacao_2d(borda, VERDE_BORDA)
+        pygame.draw.polygon(tela, VERDE_BORDA, borda, 0)
 
 
     pygame.display.flip()
