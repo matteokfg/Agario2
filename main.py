@@ -22,8 +22,9 @@ pygame.display.set_caption("Agar.io v0.5")
 relogio = pygame.time.Clock()
 
 fonte = pygame.font.SysFont("Courier New", 18, bold=True)
+fonte_vencedor = pygame.font.SysFont("Courier New", 28, bold=True)
 
-fundos = ["xadrex.png", "grama.jpg", "sistema_solar.jpg"]
+fundos = ["preto.png","xadrez.png", "pedra.jpg", "tileset_1.png"]
 
 
 # textura = pygame.transform.scale(textura, (LARGURA, ALTURA))
@@ -44,9 +45,9 @@ fundo_vertices = [
     (ESPESSURA_BORDA,ALTURA-ESPESSURA_BORDA)
 ]
 
-moedas = [Moeda() for _ in range(3)]
+moedas = [Moeda(BRANCO) for _ in range(3)]
 
-c1 = Circulo(700,300,RAIO, 0, 1.0, 1.0, 1)
+c1 = Circulo(900,300,RAIO, 0, 1.0, 1.0, 1)
 
 c2 = Circulo(100,300,RAIO, 0, 1.0, 1.0, 2, LARANJA_NEON)
 
@@ -70,6 +71,8 @@ while rodando:
     if teclas[pygame.K_t]: fundo = fundo + 1 if fundo + 1 <= len(fundos) - 1 else 0
     # 1. Carregar a textura
     textura = pygame.image.load(fundos[fundo]).convert()
+    # 2. Converte escala da textura
+    # textura = pygame.transform.scale(textura, (LARGURA, ALTURA))
     
     # --- Rotação ---------------------------------
     if teclas[pygame.K_a]: c2.angulo_graus -= 2
@@ -133,6 +136,10 @@ while rodando:
 
     # --- Desenhar moedas --------------------------
     for e in moedas:
+        if fundo != 0:
+            e.cor = AMARELO_MOEDA
+        else:
+            e.cor = BRANCO
         e.atualizar_e_desenhar(tela)
 
     # --- Desenhar as circunferencias --------------
@@ -142,7 +149,7 @@ while rodando:
 
     # --- Renderiza a borda verde -------------------
     for borda in bordas:
-        pygame.draw.polygon(tela, VERDE_BORDA, borda, 0)
+        pygame.draw.polygon(tela, VERDE_BORDA if fundo == 0 else PRETO, borda, 0)
 
     # ------- verifica se foi comido -----------------
     distancia_centros_circunferencia = c1.distancia_entre_centros(c2.tx, c2.ty)
@@ -199,7 +206,10 @@ while rodando:
     for i, t in enumerate(textos):
         cor_txt = CIANO_NEON if i % 2 == 1 else BRANCO if i == 0 else LARANJA_NEON
         x_HUD = 500 if i % 2 == 1 else 15
-        superficie = fonte.render(t, True, cor_txt)
+        if fundo != 0:
+            superficie = fonte.render(t, True, cor_txt, PRETO)
+        else:
+            superficie = fonte.render(t, True, cor_txt)
         tela.blit(superficie, (x_HUD, 15 + i * 22 if i < 2 else 15 + (math.ceil(i/2)) * 22))
 
     # tela.blit(texture, (c1.tx, c1.ty))
@@ -214,9 +224,12 @@ if vencedor is not None:
         f"Parabens!! {vencedor} venceu!"
     ]
     for i, t in enumerate(textos):
-        cor_txt = BRANCO if i == 0 else AZUL_CLARO
-        superficie = fonte.render(t, True, cor_txt)
-        tela.blit(superficie, (LARGURA // 2, (ALTURA//2) + i * 22))
+        cor_txt = BRANCO if i == 0 else vencedor.cor
+        if fundo != 0:
+            superficie = fonte_vencedor.render(t, True, cor_txt, PRETO)
+        else:
+            superficie = fonte_vencedor.render(t, True, cor_txt)
+        tela.blit(superficie, (LARGURA // 2, (ALTURA//2) + i * 30))
     pygame.display.flip()
     relogio.tick(60)
     time.sleep(5)

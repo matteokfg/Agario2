@@ -8,19 +8,20 @@ from contants import *
 
 
 class Moeda():
-    def __init__(self):
+    def __init__(self, cor):
         self.raio = 15
         self.x = random.randrange(LARGURA - (self.raio)*2)
         self.y = random.randrange(ALTURA - (self.raio)*2)
         self.escala = 1
         self.angulo_graus = 0
         self.pontos = self._criar_pontos_circulo()
-        self.cor = self._calcular_iluminacao_2d(BRANCO)
+        self.cor = cor
 
     def atualizar_e_desenhar(self, surface):
         """Segue a mesma ideia de Circulo.desenhar()"""
         v = self.transformar_vertices()
-        pygame.draw.polygon(surface, self.cor, v, 0)
+        cor_com_luz = self._calcular_iluminacao_2d(self.cor)
+        pygame.draw.polygon(surface, cor_com_luz, v, 0)
 
     def transformar_vertices(self) -> list:
         """Segue a mesma ideia do Circulo.transformar_vertices()"""

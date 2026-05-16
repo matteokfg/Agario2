@@ -7,6 +7,8 @@ LARANJA_NEON = (255, 100, 0)
 AZUL_CLARO = (100, 200, 255)
 VERDE_BORDA = (58, 179, 56) # (9, 196, 12)
 CINZA = (120,120,120)
+AMARELO_VENCEDOR = (232, 229, 40)
+AMARELO_MOEDA = (232, 228, 11)
 
 # Velocidade do movimento
 vel_circunferencia = 3
