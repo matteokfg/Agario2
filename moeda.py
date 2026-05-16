@@ -6,7 +6,7 @@ import numpy as np
 
 from contants import *
 
-
+# --- Inspirado no Yen
 class Moeda():
     def __init__(self, cor):
         self.raio = 15
@@ -14,23 +14,24 @@ class Moeda():
         self.y = random.randrange(ALTURA - (self.raio)*2)
         self.escala = 1
         self.angulo_graus = 0
-        self.pontos = self._criar_pontos_circulo()
         self.cor = cor
+        self.pontos = self._criar_pontos()
 
     def atualizar_e_desenhar(self, surface):
         """Segue a mesma ideia de Circulo.desenhar()"""
-        v = self.transformar_vertices()
-        cor_com_luz = self._calcular_iluminacao_2d(self.cor)
-        pygame.draw.polygon(surface, cor_com_luz, v, 0)
+        for forma_v, cor, espessura in self.pontos:
+            v = self.transformar_vertices(forma_v)
+            cor_com_luz = self._calcular_iluminacao_2d(v, cor)
+            pygame.draw.polygon(surface, cor_com_luz, v, espessura)
 
-    def transformar_vertices(self) -> list:
+    def transformar_vertices(self, forma) -> list:
         """Segue a mesma ideia do Circulo.transformar_vertices()"""
         rad = math.radians(self.angulo_graus)
         cos_a = math.cos(rad)
         sin_a = math.sin(rad)
 
         vertices_transformados = []
-        for x, y in self.pontos:
+        for x, y in forma:
             # 1. Escala
             nx = x * self.escala
             ny = y * self.escala
@@ -49,17 +50,33 @@ class Moeda():
             vertices_transformados.append((final_x, final_y))
         return vertices_transformados
 
-    def _criar_pontos_circulo(self) -> list:
-        """Segue a mesma ideia de Circulo._criar_pontos()"""
+    def _criar_pontos(self) -> list:
+        """
+        Cria lista dos pontos externos da cirncuferencia (poligono com 20 lados). Para isso, faz se um for loop, de 0 a 360 com step 18 (360/18=20 pontos),
+        cada valor gerado representa um angulo em graus, ele e convertido em radianos.
+
+        O cosseno do angulo e multiplicado pelo raio, gerando o valor de X.
+        O seno do angulo e multiplicado pelo raio, gerando o valor de Y.
+
+        Os valores de X e Y são salvos juntos em uma tupla.
+        """
         circulo = [(round(math.cos(math.radians(i))*self.raio,2),round(math.sin(math.radians(i))*self.raio,2)) for i in range(0, 360, 18)]
-        # Formato: list[vértice]
-        return circulo
+        
+        raio_losango = self.raio / 2
+        # para fins esteticos, cria-se um losango no centro
+        losango = [(raio_losango,0), (0, raio_losango), (-1 * raio_losango,0), (0,-1 * raio_losango)]
+
+        # Formato: (lista dos vértices, cor, espessura da linha: 0=preenchido)
+        return [
+            (circulo, self.cor, 0),
+            (losango, PRETO, 0)
+        ]
     
-    def _calcular_iluminacao_2d(self, cor=BRANCO) -> tuple:
+    def _calcular_iluminacao_2d(self, forma, cor=BRANCO) -> tuple:
         # 1. Encontrar o centro do polígono (média dos pontos X e Y)
         # Assumindo vértices como [(x1, y1), (x2, y2), ...]
-        centro_x = sum(v[0] for v in self.pontos) / len(self.pontos)
-        centro_y = sum(v[1] for v in self.pontos) / len(self.pontos)
+        centro_x = sum(v[0] for v in forma) / len(forma)
+        centro_y = sum(v[1] for v in forma) / len(forma)
         centro_poligono = np.array([centro_x, centro_y, 0])
 
         # 2. Vetor da luz (da face para a fonte de luz)
@@ -85,3 +102,7 @@ class Moeda():
         # 6. Retorna cor
         cor_final = (np.array(cor) * fator_final).astype(int)
         return tuple(np.clip(cor_final, 0, 255))
+    
+    def _set_cor(self, cor):
+        self.cor = cor
+        self.pontos = self._criar_pontos()

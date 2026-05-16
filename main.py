@@ -26,10 +26,6 @@ fonte_vencedor = pygame.font.SysFont("Courier New", 28, bold=True)
 
 fundos = ["preto.png","xadrez.png", "pedra.jpg", "tileset_1.png"]
 
-
-# textura = pygame.transform.scale(textura, (LARGURA, ALTURA))
-
-
 # --- Inicialização ---
 bordas = [
     [(0,0), (0,ALTURA), (ESPESSURA_BORDA,ALTURA), (ESPESSURA_BORDA,0)],
@@ -69,11 +65,9 @@ while rodando:
 
     # --- Escolha do fundo ---
     if teclas[pygame.K_t]: fundo = fundo + 1 if fundo + 1 <= len(fundos) - 1 else 0
-    # 1. Carregar a textura
+    # Carregar a textura
     textura = pygame.image.load(fundos[fundo]).convert()
-    # 2. Converte escala da textura
-    # textura = pygame.transform.scale(textura, (LARGURA, ALTURA))
-    
+
     # --- Rotação ---------------------------------
     if teclas[pygame.K_a]: c2.angulo_graus -= 2
     if teclas[pygame.K_d]: c2.angulo_graus += 2
@@ -137,9 +131,9 @@ while rodando:
     # --- Desenhar moedas --------------------------
     for e in moedas:
         if fundo != 0:
-            e.cor = AMARELO_MOEDA
+            e._set_cor(AMARELO_MOEDA)
         else:
-            e.cor = BRANCO
+            e._set_cor(BRANCO)
         e.atualizar_e_desenhar(tela)
 
     # --- Desenhar as circunferencias --------------
@@ -201,6 +195,8 @@ while rodando:
         f"Translação (Setas): X={c2.tx%LARGURA:.0f}, Y={c2.ty%ALTURA:.0f}",
         f"Rotação (LEFT, RIGHT)  : {c1.angulo_graus%360}°",
         f"Rotação (A, D)  : {c2.angulo_graus%360}°",
+        f"Escala Jogador 1: {c1.sx}x",
+        f"Escala Jogador 2: {c2.sx}x",
         f"Distancia {distancia_centros_circunferencia}"
     ]
     for i, t in enumerate(textos):
