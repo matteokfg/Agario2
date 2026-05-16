@@ -9,6 +9,10 @@ from contants import *
 from moeda import Moeda
 from circulo import Circulo
 
+import pygame.gfxdraw  # Precisa importar explicitamente!
+
+
+
 
 # --- Inicialização do Pygame ---
 pygame.init()
@@ -19,11 +23,10 @@ relogio = pygame.time.Clock()
 
 fonte = pygame.font.SysFont("Courier New", 18, bold=True)
 
+fundos = ["xadrex.png", "grama.jpg", "sistema_solar.jpg"]
 
-# Load and optimize the texture
-# texture = pygame.image.load('saturno.jpg').convert_alpha()
 
-# texture = pygame.transform.scale(texture, (65, 65))
+# textura = pygame.transform.scale(textura, (LARGURA, ALTURA))
 
 
 # --- Inicialização ---
@@ -32,6 +35,13 @@ bordas = [
     [(0,0), (LARGURA,0), (LARGURA,ESPESSURA_BORDA), (0,ESPESSURA_BORDA)],
     [(LARGURA,0), (LARGURA,ALTURA), (LARGURA-ESPESSURA_BORDA,ALTURA), (LARGURA-ESPESSURA_BORDA,0)],
     [(0,ALTURA), (LARGURA,ALTURA), (LARGURA,ALTURA-ESPESSURA_BORDA), (0,ALTURA-ESPESSURA_BORDA)]
+]
+
+fundo_vertices = [
+    (ESPESSURA_BORDA,ESPESSURA_BORDA),
+    (LARGURA-ESPESSURA_BORDA,ESPESSURA_BORDA),
+    (LARGURA-ESPESSURA_BORDA,ALTURA-ESPESSURA_BORDA),
+    (ESPESSURA_BORDA,ALTURA-ESPESSURA_BORDA)
 ]
 
 moedas = [Moeda() for _ in range(3)]
@@ -43,6 +53,8 @@ c2 = Circulo(100,300,RAIO, 0, 1.0, 1.0, 2, LARANJA_NEON)
 distancia_centros_circunferencia = None
 soma_raios = None
 
+fundo = 0
+
 rodando = True
 
 vencedor = None
@@ -53,6 +65,11 @@ while rodando:
             rodando = False
 
     teclas = pygame.key.get_pressed()
+
+    # --- Escolha do fundo ---
+    if teclas[pygame.K_t]: fundo = fundo + 1 if fundo + 1 <= len(fundos) - 1 else 0
+    # 1. Carregar a textura
+    textura = pygame.image.load(fundos[fundo]).convert()
     
     # --- Rotação ---------------------------------
     if teclas[pygame.K_a]: c2.angulo_graus -= 2
@@ -109,7 +126,11 @@ while rodando:
 
     # --- Renderização (tela) ----------------------
     tela.fill(PRETO)
-    
+
+    # --- Renderiza textura do fundo ---------------
+    # passar 0, 0 nos últimos parâmetros para alinhar a textura com a tela
+    pygame.gfxdraw.textured_polygon(tela, fundo_vertices, textura, 0, 0)
+
     # --- Desenhar moedas --------------------------
     for e in moedas:
         e.atualizar_e_desenhar(tela)
