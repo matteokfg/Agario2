@@ -193,7 +193,7 @@ while rodando:
     textos = [
         "CONTROLES DO MOTOR GRÁFICO:",
         f"Translação (Setas): X={c1.tx%LARGURA:.0f}, Y={c1.ty%ALTURA:.0f}",
-        f"Translação (Setas): X={c2.tx%LARGURA:.0f}, Y={c2.ty%ALTURA:.0f}",
+        f"Translação (W, S): X={c2.tx%LARGURA:.0f}, Y={c2.ty%ALTURA:.0f}",
         f"Rotação (LEFT, RIGHT)  : {c1.angulo_graus%360}°",
         f"Rotação (A, D)  : {c2.angulo_graus%360}°",
         f"Escala Jogador 1: {c1.sx}x",
