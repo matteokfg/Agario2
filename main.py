@@ -3,14 +3,12 @@ import random
 import time
 
 import pygame
+import pygame.gfxdraw
 import numpy as np
 
 from contants import *
 from moeda import Moeda
 from circulo import Circulo
-
-import pygame.gfxdraw  # Precisa importar explicitamente!
-
 
 
 
@@ -23,8 +21,6 @@ relogio = pygame.time.Clock()
 
 fonte = pygame.font.SysFont("Courier New", 18, bold=True)
 fonte_vencedor = pygame.font.SysFont("Courier New", 28, bold=True)
-
-fundos = ["preto.png","xadrez.png", "pedra.jpg", "tileset_1.png"]
 
 # --- Inicialização ---
 bordas = [
@@ -54,8 +50,11 @@ fundo = 0
 
 rodando = True
 
+trocar_fundo = True
+
 vencedor = None
 
+# ----- INICIO DO LOOP -----
 while rodando:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
@@ -64,7 +63,9 @@ while rodando:
     teclas = pygame.key.get_pressed()
 
     # --- Escolha do fundo ---
-    if teclas[pygame.K_t]: fundo = fundo + 1 if fundo + 1 <= len(fundos) - 1 else 0
+    if teclas[pygame.K_t] and trocar_fundo: fundo = fundo + 1 if fundo + 1 <= len(fundos) - 1 else 0
+    # Evita que apenas um toque na tecla altere vários fundos de uma vez. Simples "debounce", inspirado no botao mecanico do arduino
+    trocar_fundo = not teclas[pygame.K_t]
     # Carregar a textura
     textura = pygame.image.load(fundos[fundo]).convert()
 
@@ -208,11 +209,10 @@ while rodando:
             superficie = fonte.render(t, True, cor_txt)
         tela.blit(superficie, (x_HUD, 15 + i * 22 if i < 2 else 15 + (math.ceil(i/2)) * 22))
 
-    # tela.blit(texture, (c1.tx, c1.ty))
-
     pygame.display.flip()
     relogio.tick(60)
 
+# ----- FINAL -----
 # --- HUD do vencedor ---
 if vencedor is not None:
     textos = [
