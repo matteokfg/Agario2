@@ -11,7 +11,7 @@ AMARELO_VENCEDOR = (232, 229, 40)
 AMARELO_MOEDA = (232, 228, 11)
 
 # Fundos
-fundos = ["preto.png","xadrez.png","pedra.jpg","tileset_1.png"]
+fundos = ["preto.png","pedra.jpg","tileset_1.png", "tileset_ajustado_total.png"]
 
 # Velocidade do movimento
 vel_circunferencia = 3

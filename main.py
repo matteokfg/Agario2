@@ -68,6 +68,9 @@ while rodando:
     trocar_fundo = not teclas[pygame.K_t]
     # Carregar a textura
     textura = pygame.image.load(fundos[fundo]).convert()
+    # Se certo fundo, ajustar dimensoes da imagem para a dimensao da janela
+    if fundos[fundo] == "tileset_ajustado_total.png":
+        textura = pygame.transform.scale(textura, (LARGURA, ALTURA))
 
     # --- Rotação ---------------------------------
     if teclas[pygame.K_a]: c2.angulo_graus -= 2
